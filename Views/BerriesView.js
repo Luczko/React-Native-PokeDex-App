@@ -1,10 +1,108 @@
-import * as React from 'react';
-import {Text, View} from 'react-native';
+import React, {useEffect, useState, useCallback} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  StatusBar,
+  Platform,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
-const BerriesScreen = () => (
-  <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-    <Text>Home!</Text>
-  </View>
-);
+import {fetchBerriesList} from '../apiService';
+
+import {useDebounce} from '../hooks/useDebounce';
+import {useAsyncStorage} from '../hooks/useAsyncStorage';
+import {ListHeader} from '../components/ListHeader';
+import {ListBerries} from '../components/ListBerries';
+
+const BerriesScreen = ({navigation}) => {
+  const [data, setData] = useState([]);
+  const [source, setSource] = useAsyncStorage('@berriesList');
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const list = await AsyncStorage.getItem('@berriesList');
+
+      if (list == null) {
+        const response = await fetchBerriesList();
+        setSource(response.results);
+      }
+      setData(source);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const refreshBerriesList = async () => {
+    setIsRefreshing(true);
+    const response = await fetchBerriesList();
+    await setSource(response.results);
+    setData(source);
+    setIsRefreshing(false);
+  };
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const filterBerries = useCallback(
+    term =>
+      source.filter(item =>
+        item.name.toLowerCase().includes(term.toLowerCase()),
+      ),
+    [source],
+  );
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      const filteredBerries = filterBerries(debouncedSearchTerm);
+      setData(filteredBerries);
+    } else {
+      setData(source);
+    }
+  }, [debouncedSearchTerm, source, filterBerries]);
+
+  const barStyle = Platform.OS === 'ios' ? 'default' : 'light-content';
+  const isLoading = data == null;
+
+  return (
+    <>
+      <StatusBar barStyle={barStyle} backgroundColor="black" />
+      <SafeAreaView style={styles.appContainer}>
+        {isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <FlatList
+            onRefresh={refreshBerriesList}
+            refreshing={isRefreshing}
+            ListHeaderComponent={<ListHeader onChange={setSearchTerm} />}
+            data={data}
+            scrollEnabled={!isRefreshing}
+            keyExtractor={(item, index) => item.name + index}
+            windowSize={2}
+            renderItem={({item, index}) => {
+              return (
+                <ListBerries
+                  isRefreshing={isRefreshing}
+                  name={item.name}
+                  index={index}
+                  url={item.url}
+                  navigation={navigation}
+                />
+              );
+            }}
+          />
+        )}
+      </SafeAreaView>
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  appContainer: {
+    backgroundColor: 'white',
+  },
+});
 
 export default BerriesScreen;

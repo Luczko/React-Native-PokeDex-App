@@ -80,6 +80,8 @@ const HomeView = ({navigation}) => {
             scrollEnabled={!isRefreshing}
             keyExtractor={(item, index) => item.name + index}
             windowSize={2}
+            numColumns={3}
+            columnWrapperStyle={styles.myList}
             renderItem={({item, index}) => {
               return (
                 <ListItem
@@ -100,24 +102,11 @@ const HomeView = ({navigation}) => {
 
 const styles = StyleSheet.create({
   appContainer: {
-    backgroundColor: 'white',
+    backgroundColor: '#E0FFFF',
     flex: 1,
   },
-  container: {
-    backgroundColor: '#eee',
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: '100',
-  },
-  itemContainer: {
-    padding: 8,
-  },
-  disableItemContainer: {
-    backgroundColor: '#eee',
+  myList: {
+    justifyContent: 'space-around',
   },
 });
 

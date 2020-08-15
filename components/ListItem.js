@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Image,
   Alert,
+  View,
   ActivityIndicator,
 } from 'react-native';
 
@@ -53,14 +54,14 @@ export const ListItem = props => {
 
     return (
       <>
+        <Text style={styles.text}>{props.name}</Text>
+        <Text style={styles.text}>No: {details.id}</Text>
         <Image
           source={{
             uri: details.sprites.front_default,
           }}
           style={styles.image}
         />
-        <Text style={styles.text}>{props.name}</Text>
-        <Text>ID: {details.id}</Text>
       </>
     );
   };
@@ -85,17 +86,32 @@ export const ListItem = props => {
 
 const styles = StyleSheet.create({
   text: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: '100',
+    color: 'white',
+    textTransform: 'capitalize',
   },
+
   itemContainer: {
-    padding: 8,
+    padding: 5,
+    margin: 5,
+    width: 130,
+    alignItems: 'center',
+    backgroundColor: '#00BFFF',
+    borderRadius: 10,
+    borderColor: 'black',
+    borderWidth: 1,
   },
   disableItemContainer: {
     backgroundColor: '#eee',
   },
   image: {
-    width: 50,
-    height: 50,
+    backgroundColor: 'white',
+    // backgroundColor: '#9ACD32',
+    width: 100,
+    height: 100,
+    borderRadius: 5,
+    borderColor: 'black',
+    borderWidth: 1,
   },
 });
